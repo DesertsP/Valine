@@ -93,7 +93,7 @@ class Valine {
     constructor(option) {
         let _root = this;
         // version
-        _root.version = '1.1.8';
+        _root.version = '1.2.1';
         getIp();
         // Valine init
         !!option && _root.init(option);
@@ -173,17 +173,38 @@ class Valine {
             _root.nodata.show();
 
             // load smiles image
-            let _smile_wrapper = _root.el.querySelector('.vsmile-icons');            
+            let _smile_wrapper = _root.el.querySelector('.vsmile-icons');
             let smile_names = option.emoticon_list || [];
-            for(let i in smile_names) {
+            for (let i in smile_names) {
                 let img = document.createElement('img');
                 img.setAttribute('src', `${option.emoticon_url}/${smile_names[i]}`);
-                _smile_wrapper.appendChild(img) ;
+                _smile_wrapper.appendChild(img);
             }
+            // set serverURLs
+
+            let prefix = 'https://';
+            let serverURLs = '';
+            if (!option['serverURLs']) {
+                switch (option.app_id.slice(-9)) {
+                    // TAB 
+                    case '-9Nh9j0Va':
+                        prefix += 'tab.';
+                        break;
+                    // US
+                    case '-MdYXbMMI':
+                        prefix += 'us.';
+                        break;
+                    default:
+                        break;
+                }
+            }
+            serverURLs = option['serverURLs'] || prefix + 'avoscloud.com';
+
             if (!disable_av_init) {
                 av.init({
                     appId: option.app_id || option.appId,
-                    appKey: option.app_key || option.appKey
+                    appKey: option.app_key || option.appKey,
+                    serverURLs: serverURLs
                 });
                 disable_av_init = true;
             }
@@ -211,6 +232,8 @@ class Valine {
                 _root.el.querySelectorAll('.vcard').length === 0 && _root.nodata.show();
             }
         };
+
+        _root.loading.hide()
 
         let vsubmitting = _root.el.querySelector('.vsubmitting');
         vsubmitting.innerHTML = _spinner;
@@ -241,8 +264,8 @@ class Valine {
             show(o) {
                 _mark.innerHTML = `<div class="valert txt-center"><div class="vtext">${o.text}</div><div class="vbtns"></div></div>`;
                 let _vbtns = _mark.querySelector('.vbtns');
-                let _cBtn = `<button class="vcancel vbtn">${ o && o.ctxt || _root.i18n['cancel'] }</button>`;
-                let _oBtn = `<button class="vsure vbtn">${ o && o.otxt || _root.i18n['continue'] }</button>`;
+                let _cBtn = `<button class="vcancel vbtn">${o && o.ctxt || _root.i18n['cancel']}</button>`;
+                let _oBtn = `<button class="vsure vbtn">${o && o.otxt || _root.i18n['continue']}</button>`;
                 _vbtns.innerHTML = `${_cBtn}${o.type && _oBtn}`;
                 _mark.querySelector('.vcancel').addEventListener('click', function (e) {
                     _root.alert.hide();
@@ -261,19 +284,22 @@ class Valine {
             }
         }
 
-        _root.loading.show();
         let query1 = new _root.v.Query('Comment');
         query1.equalTo('url', defaultComment['url']);
         let query2 = new _root.v.Query('Comment');
         query2.equalTo('url', defaultComment['url'] + '/');
         let query = AV.Query.or(query1, query2);
         query.notEqualTo('isSpam', true);
-        query.count().then(function (count) {
-            _root.el.querySelector('.count').innerHTML = `${count}`;
-            _root.bind(option);
-        }, function (error) {
-            console.log(error);
-        });
+        query.count()
+            .then(count => {
+                _root.el.querySelector('.count').innerHTML = count;
+            })
+            .catch(ex => {
+                console.log(ex)
+                _root.el.querySelector('.count').innerHTML=0
+            });
+        _root.bind(option);
+
     }
 
     /**
@@ -286,7 +312,7 @@ class Valine {
         Event.on('click', vsmiles, (e) => {
             var textField = _root.el.querySelector('.veditor');
             let imgSrc = e.target.src;
-            if ( typeof imgSrc == 'undefined' ) return;
+            if (typeof imgSrc == 'undefined') return;
             // var tag = " ![](/" + imgSrc.replace(/^.*\/(.*\.gif)$/, '$1') + ") ";
             var tag = "!(:" + decodeURI(imgSrc).replace(/^.*\/(.*)$/, '$1') + ":)";
             if (document.selection) {
@@ -319,7 +345,7 @@ class Valine {
         })
 
         // cancel reply
-        Event.on('click', _root.el.querySelector('.vcancel-comment-reply'), (e)=>{
+        Event.on('click', _root.el.querySelector('.vcancel-comment-reply'), (e) => {
             _root.reset();
         });
 
@@ -340,7 +366,7 @@ class Valine {
 
         var num = 1;
         var parent_count = 0;
-        
+
         let parentQuery = (page_num = 1) => {
             _root.loading.show();
             let cq = _root.v.Query.doCloudQuery(`select nick, comment, link, rid, emailHash, isSpam
@@ -380,13 +406,13 @@ class Valine {
                                     from Comment
                                     where (rid='' or rid is not exists) 
                                            and (url='${defaultComment["url"]}' or url='${defaultComment["url"] + "/"}')
-                                    order by -createdAt`).then(data=>{
+                                    order by -createdAt`).then(data => {
             parent_count = data.count;
             parentQuery(1);
         });
 
         // 无限嵌套加载
-        let nestQuery = (vcard, level=1) => {
+        let nestQuery = (vcard, level = 1) => {
             var _vchild = vcard.querySelector('.vcomment-children');
             var _vlist = _vchild.querySelector('.vlist');
             var _id = vcard.getAttribute('id');
@@ -398,7 +424,7 @@ class Valine {
                                from Comment
                                where rid='${_id}' and (url='${defaultComment["url"]}' or url='${defaultComment["url"] + "/"}')
                                order by -createdAt`).then(function (data) {
-                                   let count = data.count;
+                    let count = data.count;
                     if (count > 0) {
                         var _show_children_wrapper = _vchild.querySelector('.vshow-children-wrapper');
                         _show_children_wrapper.setAttribute('style', 'display: block !important;');
@@ -424,9 +450,9 @@ class Valine {
                 let len = rets.length;
                 if (len) {
                     for (let i = 0; i < len; i++) {
-                        if (!rets[i].get('isSpam')){
+                        if (!rets[i].get('isSpam')) {
                             let vl = insertComment(rets[i], _vlist, true)
-                            nestQuery(vl, level+1);
+                            nestQuery(vl, level + 1);
                         }
 
                     }
@@ -437,7 +463,7 @@ class Valine {
             })
         };
 
-        let insertComment = (comment, vlist=null, top=true) => {
+        let insertComment = (comment, vlist = null, top = true) => {
             let _vcard = document.createElement('li');
             _vcard.setAttribute('class', 'vcard');
             _vcard.setAttribute('id', comment.id);
@@ -449,7 +475,7 @@ class Valine {
                                         <img class="vavatar" src="${gravatar_url}"/>
                                         <a rid='${comment.id}' at='@${comment.get('nick')}' class="vat" id="at-${comment.id}">${_root.i18n['reply']}</a>
                                         <div class="vmeta-info">
-                                            ${comment.get('link') ? `<a class="vname" href="${ comment.get('link') }" target="_blank" rel="nofollow" > ${comment.get("nick")}</a>` : `<span class="vname">${comment.get("nick")}</span>`}
+                                            ${comment.get('link') ? `<a class="vname" href="${comment.get('link')}" target="_blank" rel="nofollow" > ${comment.get("nick")}</a>` : `<span class="vname">${comment.get("nick")}</span>`}
                                             <span class="spacer">|</span>
                                             <span class="vtime">${timeAgo(comment.get("createdAt"), _root.i18n)}</span>
                                         </div>
@@ -564,15 +590,15 @@ class Valine {
                 return;
             }
             // render markdown
-            defaultComment.comment = xss(md(defaultComment.comment.replace(/!\(:(.*?\.\w+):\)/g, 
-                                            `<img src="${option.emoticon_url}/$1" alt="$1" class="vemoticon-img">`)),
-                                            {
-                                                onIgnoreTagAttr: function (tag, name, value, isWhiteAttr) {
-                                                if (name === 'class') {
-                                                    return name + '="' + xss.escapeAttrValue(value) + '"';
-                                                }
-                                                }
-                                            });
+            defaultComment.comment = xss(md(defaultComment.comment.replace(/!\(:(.*?\.\w+):\)/g,
+                `<img src="${option.emoticon_url}/$1" alt="$1" class="vemoticon-img">`)),
+                {
+                    onIgnoreTagAttr: function (tag, name, value, isWhiteAttr) {
+                        if (name === 'class') {
+                            return name + '="' + xss.escapeAttrValue(value) + '"';
+                        }
+                    }
+                });
             let idx = defaultComment.comment.indexOf(defaultComment.at);
             if (idx > -1 && defaultComment.at != '') {
                 let at = `<a class="at" href='#${defaultComment.rid}'>${defaultComment.at}</a>`;
@@ -597,7 +623,7 @@ class Valine {
 
         let smile_btn = _root.el.querySelector('.vemoji-btn');
         let smile_icons = _root.el.querySelector('.vsmile-icons');
-        Event.on('click', smile_btn, (e)=>{
+        Event.on('click', smile_btn, (e) => {
             if (preview_text.getAttribute('triggered')) {
                 preview_text.setAttribute('style', 'display:none;');
                 preview_text.removeAttribute('triggered');
@@ -614,7 +640,7 @@ class Valine {
 
         let preview_btn = _root.el.querySelector('.vpreview-btn');
         let preview_text = _root.el.querySelector('.vpreview-text');
-        Event.on('click', preview_btn, (e)=>{
+        Event.on('click', preview_btn, (e) => {
             if (smile_icons.getAttribute('triggered')) {
                 smile_icons.setAttribute('style', 'display:none;');
                 smile_icons.removeAttribute('triggered');
@@ -629,15 +655,15 @@ class Valine {
                     return;
                 }
                 // render markdown
-                preview_text.innerHTML = xss(md(defaultComment.comment.replace(/!\(:(.*?\.\w+):\)/g, 
-                                                `<img src="${option.emoticon_url}/$1" alt="$1" class="vemoticon-img">`)),
-                                                {
-                                                    onIgnoreTagAttr: function (tag, name, value, isWhiteAttr) {
-                                                      if (name === 'class') {
-                                                        return name + '="' + xss.escapeAttrValue(value) + '"';
-                                                      }
-                                                    }
-                                                  });
+                preview_text.innerHTML = xss(md(defaultComment.comment.replace(/!\(:(.*?\.\w+):\)/g,
+                    `<img src="${option.emoticon_url}/$1" alt="$1" class="vemoticon-img">`)),
+                    {
+                        onIgnoreTagAttr: function (tag, name, value, isWhiteAttr) {
+                            if (name === 'class') {
+                                return name + '="' + xss.escapeAttrValue(value) + '"';
+                            }
+                        }
+                    });
                 preview_text.removeAttribute('style');
                 preview_text.setAttribute('triggered', 1);
             }
@@ -783,7 +809,7 @@ const timeAgo = (date, i18n) => {
                     //计算相差秒数
                     var leave3 = leave2 % (60 * 1000); //计算分钟数后剩余的毫秒数
                     var seconds = Math.round(leave3 / 1000);
-                    return seconds + ' ' +  i18n['seconds'];
+                    return seconds + ' ' + i18n['seconds'];
                 }
                 return minutes + ' ' + i18n['minutes'];
             }
@@ -822,9 +848,9 @@ const loadJS = function (url, success) {
     document.getElementsByTagName('head')[0].appendChild(domScript);
 };
 
-const getIp = function(){
+const getIp = function () {
     $.getJSON("https://api.ipify.org/?format=json",
-        function(json) {
+        function (json) {
             defaultComment['ip'] = json.ip;
         }
     );
