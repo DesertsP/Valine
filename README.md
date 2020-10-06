@@ -5,7 +5,7 @@
 ------------------------------
 **[Live Demo](https://panjunwen.github.io/Valine/)**
 
-[中文教程](https://panjunwen.com/diy-a-comment-system/)
+[中文教程](https://deserts.io/diy-a-comment-system/)
 
 - High speed.
 - Safe by default.

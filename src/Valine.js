@@ -6,6 +6,7 @@ const format = require('string-format');
 
 var GRAVATAR_BASE_URL = 'https://gravatar.loli.net/avatar/';
 var DEFAULT_EMAIL_HASH = '9e63c80900d106cbbec5a9f4ea433a3e';
+var IP_SERVICE = 'https://api.ipify.org/?format=json'
 
 
 var i18n_set = {
@@ -117,7 +118,12 @@ class Valine {
             if (toString.call(el) != '[object HTMLDivElement]') {
                 throw `The target element was not found.`;
             }
+            let count_el = toString.call(option.count_el) === "[object HTMLDivElement]" ? option.count_el : document.querySelectorAll(option.count_el)[0];
+            if (toString.call(count_el) != '[object HTMLSpanElement]') {
+                console.log(`The comment count <span> element ${option.count_el} was not found.`);
+            }
             _root.el = el;
+            _root.count_el = count_el;
             _root.el.classList.add('valine');
             let placeholder = option.placeholder || '';
             let eleHTML = `<div id="vinputs-placeholder">
@@ -270,6 +276,9 @@ class Valine {
         query.notEqualTo('isSpam', true);
         query.count().then(function (count) {
             _root.el.querySelector('.count').innerHTML = `${count}`;
+            if (toString.call(_root.count_el) == '[object HTMLSpanElement]') {
+                _root.count_el.innerHTML = `${count}`;
+            }
             _root.bind(option);
         }, function (error) {
             console.log(error);
@@ -450,7 +459,7 @@ class Valine {
                                         <a rid='${comment.id}' at='@${comment.get('nick')}' class="vat" id="at-${comment.id}">${_root.i18n['reply']}</a>
                                         <div class="vmeta-info">
                                             ${comment.get('link') ? `<a class="vname" href="${ comment.get('link') }" target="_blank" rel="nofollow" > ${comment.get("nick")}</a>` : `<span class="vname">${comment.get("nick")}</span>`}
-                                            <span class="spacer">|</span>
+                                            <span class="spacer"> · </span>
                                             <span class="vtime">${timeAgo(comment.get("createdAt"), _root.i18n)}</span>
                                         </div>
                                     </div>
@@ -822,12 +831,23 @@ const loadJS = function (url, success) {
     document.getElementsByTagName('head')[0].appendChild(domScript);
 };
 
+
 const getIp = function(){
-    $.getJSON("https://api.ipify.org/?format=json",
-        function(json) {
-            defaultComment['ip'] = json.ip;
-        }
-    );
+    var request = new XMLHttpRequest();
+    request.open('GET', IP_SERVICE, true);
+
+    request.onload = function() {
+    if (this.status >= 200 && this.status < 400) {
+        var data = JSON.parse(this.response);
+        defaultComment['ip'] = data.ip;
+    } else {
+    }
+    };
+
+    request.onerror = function() {
+    };
+
+    request.send();
 };
 
 
