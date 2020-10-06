@@ -274,15 +274,18 @@ class Valine {
         query2.equalTo('url', defaultComment['url'] + '/');
         let query = AV.Query.or(query1, query2);
         query.notEqualTo('isSpam', true);
-        query.count().then(function (count) {
-            _root.el.querySelector('.count').innerHTML = `${count}`;
+        query.count()
+        .then(count => {
+            _root.el.querySelector('.count').innerHTML = count;
             if (toString.call(_root.count_el) == '[object HTMLSpanElement]') {
-                _root.count_el.innerHTML = `${count}`;
+                _root.count_el.innerHTML = count;
             }
-            _root.bind(option);
-        }, function (error) {
-            console.log(error);
+        })
+        .catch(ex => {
+            console.log(ex)
+            _root.el.querySelector('.count').innerHTML=0
         });
+        _root.bind(option);
     }
 
     /**
