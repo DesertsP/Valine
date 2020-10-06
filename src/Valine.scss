@@ -61,7 +61,7 @@
         border-top: 1px solid rgba(150, 150, 150, 0.08);
         border-radius: 0;
         margin: .3em 0;
-        max-height: 64px;
+        max-height: 145px;
         overflow: auto;
         img {
           display: inline-block;
@@ -124,7 +124,7 @@
         background: var(--background);
         border: none;
         resize: none;
-        min-height: 6em;
+        min-height: 8em;
         margin: 0;
         &:focus {
           border-color: var(--border-color);
