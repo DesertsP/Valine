@@ -3,6 +3,7 @@ var md = require('marked');
 var xss = require('xss');
 var crypto = require('blueimp-md5');
 const format = require('string-format');
+const AV = require('leancloud-storage');
 
 var GRAVATAR_BASE_URL = 'https://gravatar.loli.net/avatar/';
 var DEFAULT_EMAIL_HASH = '9e63c80900d106cbbec5a9f4ea433a3e';

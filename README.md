@@ -1,9 +1,9 @@
 ![](./src/images/logo.opacity.png)
 # Valine  
 [![version](https://img.shields.io/github/release/xCss/Valine.svg?style=flat-square)](https://github.com/xCss/Valine/releases) [![npm downloads](https://img.shields.io/npm/dt/valine.svg?style=flat-square)](https://www.npmjs.com/package/valine) [![build](https://img.shields.io/circleci/project/github/xCss/Valine/master.svg?style=flat-square)](https://circleci.com/gh/xCss/Valine) [![donate](https://img.shields.io/badge/$-donate-ff69b4.svg?maxAge=2592000&style=flat-square)](#donate)  
+
 > A simple comment system based on Leancloud.  
-------------------------------
-**[Live Demo](https://panjunwen.github.io/Valine/)**
+
 
 [中文教程](https://deserts.io/diy-a-comment-system/)
 
@@ -27,21 +27,17 @@
 ```html
 <script src="./dist/Valine.min.js"></script>
 ```
-or
-```html
-<script src="https://panjunwen.github.io/Valine/dist/Valine.min.js"></script>
-```
 **2. Get `App ID`/`App Key` from LeanCloud**  
 [Click here](https://leancloud.cn/dashboard/login.html#/signup) to register or login in `LeanCloud`.  
 [Click here](https://leancloud.cn/dashboard/applist.html#/newapp) Create new application in `LeanCloud`, and you will get `appId`/`appKey`.
 
 **3. Transfer Your Data**
 
-[Disqus2LeanCloud](http://disqus.panjunwen.com/)
+[Disqus2LeanCloud](https://github.com/DesertsP/disqus2valine)
 
 **4. Administration**
 
-[Valine Admin](https://github.com/panjunwen/Valine-Admin)
+[Valine Admin](https://github.com/DesertsP/Valine-Admin)
 
 ## Usage
 ```html
@@ -59,7 +55,6 @@ or
     <div class="comment"></div>
     <script>
       new Valine({
-          av: AV,
           el: '#disqus_thread',
           smiles_url: '/smiles',
           app_id: 'Your App ID',
