@@ -123,7 +123,7 @@ class Valine {
             }
             let count_el = toString.call(option.count_el) === "[object HTMLDivElement]" ? option.count_el : document.querySelectorAll(option.count_el)[0];
             if (toString.call(count_el) != '[object HTMLSpanElement]') {
-                console.log(`The comment count <span> element ${option.count_el} was not found.`);
+                // console.log(`The comment count <span> element ${option.count_el} was not found.`);
             }
             _root.el = el;
             _root.count_el = count_el;
